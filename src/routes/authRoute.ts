@@ -1,7 +1,7 @@
 const myauthController = require('./../controllers/authController');
 const myexpress = require('express');
 
-let routerx = myexpress.Router();
+const routerx = myexpress.Router();
 
 // anybody can access this routes
 routerx.get('/:id/verify/:token', myauthController.verifyUser)

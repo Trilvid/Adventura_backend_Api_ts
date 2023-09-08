@@ -13,6 +13,9 @@ const errorHandeler = require("./controllers/errorHandler")
 const rateLimit = require('express-rate-limit');
 const mongoSanitize = require('express-mongo-sanitize');
 const xss = require('xss-clean');
+const swaggerJsDoc = require('swagger-jsdoc') 
+const swaggerUi = require('swagger-ui-express') 
+
 
 const limiter = rateLimit({
   max: 10,
@@ -36,6 +39,37 @@ app.use(xss());
 
 app.set('view engine', 'pug');
 app.use(express.static(path.join(__dirname, 'public')));
+
+const options = {
+  definition: {
+    openapi: '3.0.0',
+    info: {
+      title: "API Documentation for Adventura Backend App",
+      version: '1.0.0'
+    },
+    servers: [
+      {
+        url: 'http://localhost:5000/api/v1'
+      }
+    ]
+  },
+  apis: ['./routes/*.ts' ]
+}
+
+const swaggerSpec = swaggerJsDoc(options)
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec))
+
+/**
+ * @swagger
+ * /auth/allUsers:
+ * get:
+ *    summary: This route is used to get all the users on this app
+ *    description: This route is used to get all the users on this app
+ *    responses:
+ *      200:
+ *        description: To Get All Users
+ */
+
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));

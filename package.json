@@ -5,8 +5,8 @@
   "main": "App.ts",
   "scripts": {
     "test": "dev",
-    "start": "node ./dist/app.js",
-    "dev": "nodemon server.ts",
+    "start": "node ./dist/server.js",
+    "dev": "nodemon ./src/server.ts",
     "build": "tsc -p ."
   },
   "engines": {
@@ -37,6 +37,8 @@
     "nodemailer": "^6.9.4",
     "nodemon": "^2.0.22",
     "pug": "^3.0.2",
+    "swagger-jsdoc": "^6.0.0",
+    "swagger-ui-express": "^5.0.0",
     "ts-node": "^10.9.1",
     "typescript": "^5.0.4",
     "validator": "^13.11.0",
