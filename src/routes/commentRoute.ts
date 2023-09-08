@@ -1,19 +1,19 @@
-const authController = require('../controllers/authController');
-const commentController = require('../controllers/commentController');
-const express = require('express');
+const mauthController = require('../controllers/authController');
+const ourcommentController = require('../controllers/commentController');
+const yexpress = require('express');
 
-const router = express.Router({ mergeParams: true });
+const routery = yexpress.Router({ mergeParams: true });
 
-router.get('/allComment', commentController.getAllComments)
-router.get('/:id', commentController.getComment)
-router.post('/', commentController.newComment)
+routery.get('/allComment', ourcommentController.getAllComments)
+routery.get('/:id', ourcommentController.getComment)
+routery.post('/', ourcommentController.newComment)
 
 // only logged in users can use this route
-router.use(authController.protect, authController.restrictTo('user'))   
-router.delete('/:id', commentController.deleteComment)
+routery.use(mauthController.protect, mauthController.restrictTo('user'))   
+routery.delete('/:id', ourcommentController.deleteComment)
 
 // nested route for comments
 // router.post('/', commentController.newComment)
 
 
-module.exports = router;
+module.exports = routery;
