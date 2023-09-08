@@ -9,7 +9,7 @@ process.on('uncaughtException', err => {
 
 
 dotenv.config({ path: './.env' });
-const app = require('./src/App');
+const app = require('./src/app');
 
 mongoose.set('strictQuery', false);
 

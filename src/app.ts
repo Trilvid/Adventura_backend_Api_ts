@@ -34,7 +34,7 @@ app.use(express.json({ limit: '10kb' }));
 app.use(mongoSanitize());
 app.use(xss());
 
-app.set('view engine', 'ejs');
+app.set('view engine', 'pug');
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.use(bodyParser.json());

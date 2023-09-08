@@ -6,6 +6,7 @@ const tryCatch = require('./../utils/tryCatch')
 const AppError = require('./../utils/AppError');
 const { promisify } = require('util');
 const sendEmail = require('./../utils/sendEmail');
+const Email = require('./../utils/sendEmail');
 
 
 
@@ -27,6 +28,19 @@ interface MyObjects {
 const success = ( statusCode: number, res:Response, myuser: MyObjects, message: string) => {
  
   const token = createToken(myuser.id);
+  // const cookieOptions = {
+  //   expires: new Date(
+  //     Date.now() + process.env.JWT_COOKIE_EXPIRES_IN * 24 * 60 * 60 * 1000
+  //   ),
+  //   httpOnly: true
+  // };
+  // if (process.env.NODE_ENV === 'production') cookieOptions.secure = true;
+
+  // res.cookie('jwt', token, cookieOptions);
+
+  // // Remove password from output
+  // user.password = undefined;
+
   const url= `${process.env.BASE_URL}auth/${myuser._id}/verify/${token}`;
 
   res.status(statusCode).json({
@@ -128,6 +142,9 @@ exports.getUserById = tryCatch( async (req:Request, res:Response) => {
       message: msg,
     });
 
+  // const url = `${req.protocol}://${req.get('host')}/me`;
+  // console.log(url);
+  // await new Email(newUser, url).sendWelcome();
 
       return success(201, res, user, "Account Created")
       
@@ -164,6 +181,14 @@ exports.getUserById = tryCatch( async (req:Request, res:Response) => {
     }
   })
 
+exports.logout = (req:Request, res:Response) => {
+  res.cookie('jwt', 'loggedout', {
+    expires: new Date(Date.now() + 10 * 1000),
+    httpOnly: true
+  });
+  res.status(200).json({ status: 'success' });
+};
+
 // Create a custom type for user data
 interface UserData {
   id: string;
@@ -187,6 +212,10 @@ exports.protect = async (req:Request, res:Response, next:NextFunction) => {
     req.headers.authorization.startsWith('Bearer')
   ) {
     token = req.headers.authorization.split(' ')[1];
+  }
+
+  else if (req.cookies.jwt) {
+    token = req.cookies.jwt;
   }
 
   if (!token) {
@@ -237,16 +266,16 @@ const resetURL = `${req.protocol}://${req.get(
   'host'
 )}/api/v1/auth/resetPassword/${resetToken}`;
 
-// const message = `Forgot your password? Submit a PATCH request with your new password and passwordConfirm to: ${resetURL}.\nIf you didn't forget your password, please ignore this email!`;
-// await sendEmail({
-//   email: user.email,
-//   subject: 'Email Reset Link',
-//   message
-// });
+const message = `Forgot your password? Submit a PATCH request with your new password and passwordConfirm to: ${resetURL}.\nIf you didn't forget your password, please ignore this email!`;
+await sendEmail({
+  email: user.email,
+  subject: 'Email Reset Link',
+  message
+});
 
-await new Email(user, resetURL).sendPasswordReset();
+// await new Email(user, resetURL).sendPasswordReset();
 
-  res.status(200).json({
+  return res.status(200).json({
     status: 'success',
     message: 'Token sent to email',
     resetURL
