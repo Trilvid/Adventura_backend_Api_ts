@@ -1,23 +1,23 @@
 "use strict";
-const authController = require('./../controllers/authController');
-const express = require('express');
-let router = express.Router();
+const myauthController = require('./../controllers/authController');
+const myexpress = require('express');
+const routerx = myexpress.Router();
 // anybody can access this routes
-router.get('/:id/verify/:token', authController.verifyUser);
-router.post('/signUp', authController.SignUp);
-router.post('/signIn', authController.Login);
-router.post('/forgottenPassword', authController.forgotPassword);
-router.patch('/resetPassword/:token', authController.resetPassword);
-router.get('/allUsers', 
-// authController.restrictTo("admin"), 
-authController.getAllUsers);
+routerx.get('/:id/verify/:token', myauthController.verifyUser);
+routerx.post('/signUp', myauthController.SignUp);
+routerx.post('/signIn', myauthController.Login);
+routerx.post('/forgottenPassword', myauthController.forgotPassword);
+routerx.patch('/resetPassword/:token', myauthController.resetPassword);
+routerx.get('/allUsers', 
+// myauthController.restrictTo("admin"), 
+myauthController.getAllUsers);
 // only logged in users have access to this routes
-router.use(authController.protect);
-router.patch('/updatePassword', authController.updatePassword);
-router.patch('/myProfile', authController.updateMe);
-router.patch('/deleteAccount', authController.deleteMe);
+routerx.use(myauthController.protect);
+routerx.patch('/updatePassword', myauthController.updatePassword);
+routerx.patch('/myProfile', myauthController.updateMe);
+routerx.patch('/deleteAccount', myauthController.deleteMe);
 // only admins have access to this route
-router.use(authController.restrictTo("user"));
-router.get('/:id', authController.getUserById);
-router.get('/me', authController.getUser);
-module.exports = router;
+routerx.use(myauthController.restrictTo("user"));
+routerx.get('/:id', myauthController.getUserById);
+routerx.get('/me', myauthController.getUser);
+module.exports = routerx;
