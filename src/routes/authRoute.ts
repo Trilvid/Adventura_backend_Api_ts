@@ -10,9 +10,6 @@ routerx.post('/signIn', myauthController.Login)
 routerx.post('/forgottenPassword', myauthController.forgotPassword)
 routerx.patch('/resetPassword/:token', myauthController.resetPassword)
 
-routerx.get('/allUsers', 
-// myauthController.restrictTo("admin"), 
-myauthController.getAllUsers)
 
 // only logged in users have access to this routes
 routerx.use(myauthController.protect)
@@ -24,6 +21,8 @@ routerx.patch('/deleteAccount', myauthController.deleteMe)
 routerx.use(myauthController.restrictTo("user"))
 routerx.get('/:id', myauthController.getUserById)
 routerx.get('/me', myauthController.getUser)
-
+routerx.get('/allUsers', 
+myauthController.restrictTo("admin"), 
+myauthController.getAllUsers)
 
 module.exports = routerx;
