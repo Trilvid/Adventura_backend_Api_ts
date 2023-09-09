@@ -11,6 +11,7 @@ const body_parser_1 = __importDefault(require("body-parser"));
 const helmet_1 = __importDefault(require("helmet"));
 const http_errors_1 = __importDefault(require("http-errors"));
 const path_1 = __importDefault(require("path"));
+const swagger_1 = __importDefault(require("./utils/swagger"));
 const auth = require("./routes/authRoute");
 const story = require("./routes/storyRoute");
 const comment = require("./routes/commentRoute");
@@ -18,10 +19,8 @@ const errorHandeler = require("./controllers/errorHandler");
 const rateLimit = require('express-rate-limit');
 const mongoSanitize = require('express-mongo-sanitize');
 const xss = require('xss-clean');
-const swaggerJsDoc = require('swagger-jsdoc');
-const swaggerUi = require('swagger-ui-express');
 const limiter = rateLimit({
-    max: 10,
+    max: 100,
     windowMs: 60 * 60 * 1000,
     message: 'Too Many requests form this Ip, please try again in an hour!'
 });
@@ -38,36 +37,15 @@ app.use(mongoSanitize());
 app.use(xss());
 app.set('view engine', 'pug');
 app.use(express_1.default.static(path_1.default.join(__dirname, 'public')));
-const options = {
-    definition: {
-        openapi: '3.0.0',
-        info: {
-            title: "API Documentation for Adventura Backend App",
-            version: '1.0.0'
-        },
-        servers: [
-            {
-                url: 'http://localhost:5000/api/v1'
-            }
-        ]
-    },
-    apis: ['./routes/*.ts']
-};
-const swaggerSpec = swaggerJsDoc(options);
-app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
-/**
- * @swagger
- * /auth/allUsers:
- * get:
- *    summary: This route is used to get all the users on this app
- *    description: This route is used to get all the users on this app
- *    responses:
- *      200:
- *        description: To Get All Users
- */
 app.use(body_parser_1.default.json());
 app.use(body_parser_1.default.urlencoded({ extended: true }));
+// swagger documentation
+const port = 5000;
+(0, swagger_1.default)(app, port);
 // 2) Routes
+app.get('/', (req, res) => {
+    res.send("hello Welcome to our application");
+});
 app.use('/api/v1/auth', auth);
 app.use('/api/v1/stories', story);
 app.use('/api/v1/comment', comment);

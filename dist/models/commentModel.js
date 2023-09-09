@@ -1,5 +1,31 @@
 "use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
 const mongoose = require('mongoose');
+/**
+ * @openapi
+ * components:
+ *  schemas:
+ *    CreateComment:
+ *      type: object
+ *      required:
+ *        - comment
+ *      properties:
+ *        comment:
+ *          type: string
+ *    CommentResponse:
+ *      type: object
+ *      properties:
+ *        _id:
+ *          type: string
+ *        comment:
+ *          type: string
+ *        story:
+ *          type: string
+ *        createdAt:
+ *          type: string
+ *        updatedAt:
+ *          type: string
+ */
 const commentSchema = new mongoose.Schema({
     comment: {
         type: String,
@@ -19,12 +45,12 @@ const commentSchema = new mongoose.Schema({
     timestamps: true
 });
 // remeber to add user name and photo so it can show those details sure 
-// commentSchema.pre(/^find/, function(next) {
-//   this.populate({
-//     path: 'story',
-//     select: 'title'
-//   })
-//   next();
-// })
+commentSchema.pre(/^find/, function (next) {
+    this.populate({
+        path: 'story',
+        select: 'title'
+    });
+    next();
+});
 const comments = mongoose.model('Comment', commentSchema);
 module.exports = comments;

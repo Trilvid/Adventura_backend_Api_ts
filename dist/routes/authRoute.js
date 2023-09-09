@@ -2,15 +2,208 @@
 const myauthController = require('./../controllers/authController');
 const myexpress = require('express');
 const routerx = myexpress.Router();
+/**
+ * @openapi
+ * /api/v1/auth/allUsers:
+ *  get:
+ *      tags:
+ *      - User
+ *      summary: Get all registered user
+ *      description: This is shows all users in this system
+ *      responses:
+ *          200:
+ *              description: App is up and running
+ *
+ * /api/v1/auth/signUp:
+ *  post:
+ *      tags:
+ *      - User
+ *      summary: Register a user
+ *      requestBody:
+ *          required: true
+ *          content:
+ *              application/json:
+ *                  schema:
+ *                      $ref: '#/components/schemas/CreateUserInput'
+ *      responses:
+ *          200:
+ *              description: Success
+ *              content:
+ *                  application/json:
+ *                      schema:
+ *                          $ref: '#/components/schemas/CreateUserResponse'
+ *          409:
+ *              description: Conflict
+ *          400:
+ *              description: Bad Request
+ *
+ * '/api/v1/auth/{userId}':
+ *  get:
+ *      tags:
+ *      - User
+ *      summary: Gets a single user by the userId
+ *      parameters:
+ *      - name: userId
+ *      in: path
+ *      description: The users id
+ *      required: true
+ *      responses:
+ *          200:
+ *              description: Success
+ *              content:
+ *                  application/json:
+ *                      schema:
+ *                          $ref: '#/components/schema/CreateUserInput'
+ *          404:
+ *              description: User not Found
+ *
+ * '/api/v1/auth/me':
+ *  get:
+ *      tags:
+ *      - User
+ *      summary: Gets a logged in user
+ *      description: Gets the logged in Users details
+ *      responses:
+ *          200:
+ *              description: Success
+ *          404:
+ *              description: User not Found
+ *
+ * /api/v1/auth/signIn:
+ *  post:
+ *      tags:
+ *      - User
+ *      summary: Login a user
+ *      requestBody:
+ *          required: true
+ *          content:
+ *              application/json:
+ *                  schema:
+ *                      $ref: '#/components/schemas/LoginUser'
+ *      responses:
+ *          200:
+ *              description: Success
+ *          409:
+ *              description: Conflict
+ *          400:
+ *              description: Bad Request
+ *
+ * /api/v1/auth/forgottenPassword:
+ *  post:
+ *      tags:
+ *      - User
+ *      summary: Forgotten user password
+ *      requestBody:
+ *          required: true
+ *          content:
+ *              application/json:
+ *                  schema:
+ *                      $ref: '#/components/schemas/UserForgottenPassword'
+ *      responses:
+ *          200:
+ *              description: Success
+ *          409:
+ *              description: Conflict
+ *          400:
+ *              description: Bad Request
+ *
+ * '/api/v1/auth/resetPassword/{token}':
+ *  patch:
+ *      tags:
+ *      - User
+ *      summary: Reset user password
+ *      parameters:
+ *      - name: token
+ *      in: path
+ *      description: The token sent to your email
+ *      required: true
+ *      responses:
+ *          200:
+ *              description: Success
+ *              content:
+ *                  application/json:
+ *                      schema:
+ *                          $ref: '#/components/schema/UserResetPassword'
+ *          404:
+ *              description: User not Found
+ *
+ * '/api/v1/auth/{id}/verify/{token}':
+ *  get:
+ *      tags:
+ *      - User
+ *      summary: Verify your email adddress
+ *      parameters:
+ *      - name: token
+ *      - name: id
+ *      in: path
+ *      description: The email verification was sent to your email
+ *      required: true
+ *      responses:
+ *          200:
+ *              description: Success
+ *          404:
+ *              description: User not Found
+ *
+ * /api/v1/auth/updatePassword:
+ *  patch:
+ *      tags:
+ *      - User
+ *      summary: Change user password
+ *      requestBody:
+ *          required: true
+ *          content:
+ *              application/json:
+ *                  schema:
+ *                      $ref: '#/components/schemas/updatePassword'
+ *      responses:
+ *          200:
+ *              description: Success
+ *          409:
+ *              description: Conflict
+ *          400:
+ *              description: Bad Request
+ *
+ * /api/v1/auth/myProfile:
+ *  patch:
+ *      tags:
+ *      - User
+ *      summary: Change user profile
+ *      description: the photo field should contain the url to the picture
+ *      requestBody:
+ *          required: true
+ *          content:
+ *              application/json:
+ *                  schema:
+ *                      $ref: '#/components/schemas/userProfile'
+ *      responses:
+ *          200:
+ *              description: Success
+ *          409:
+ *              description: Conflict
+ *          400:
+ *              description: Bad Request
+ *
+ * /api/v1/auth/deleteAccount:
+ *  delete:
+ *      tags:
+ *      - User
+ *      summary: Delete a user account
+ *      description: delete can only work for a logged in user
+ *      responses:
+ *          200:
+ *              description: Success
+ *          409:
+ *              description: Conflict
+ *          400:
+ *              description: Bad Request
+ *
+ */
 // anybody can access this routes
 routerx.get('/:id/verify/:token', myauthController.verifyUser);
 routerx.post('/signUp', myauthController.SignUp);
 routerx.post('/signIn', myauthController.Login);
 routerx.post('/forgottenPassword', myauthController.forgotPassword);
 routerx.patch('/resetPassword/:token', myauthController.resetPassword);
-routerx.get('/allUsers', 
-// myauthController.restrictTo("admin"), 
-myauthController.getAllUsers);
 // only logged in users have access to this routes
 routerx.use(myauthController.protect);
 routerx.patch('/updatePassword', myauthController.updatePassword);
@@ -20,4 +213,5 @@ routerx.patch('/deleteAccount', myauthController.deleteMe);
 routerx.use(myauthController.restrictTo("user"));
 routerx.get('/:id', myauthController.getUserById);
 routerx.get('/me', myauthController.getUser);
+routerx.get('/allUsers', myauthController.restrictTo("admin"), myauthController.getAllUsers);
 module.exports = routerx;

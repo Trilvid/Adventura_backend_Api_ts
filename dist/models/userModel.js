@@ -17,6 +17,103 @@ const bcrypt_1 = __importDefault(require("bcrypt"));
 const crypto_1 = __importDefault(require("crypto"));
 const mongoose_unique_validator_1 = __importDefault(require("mongoose-unique-validator"));
 const validate = require('validator');
+/**
+ * @openapi
+ * components:
+ *  schemas:
+ *    CreateUserInput:
+ *      type: object
+ *      required:
+ *        - firstname
+ *        - lastname
+ *        - username
+ *        - email
+ *        - password
+ *        - country
+ *        - mobile
+ *      properties:
+ *        firstname:
+ *          type: string
+ *          default: John
+ *        lastname:
+ *          type: string
+ *          default: Deo
+ *        username:
+ *          type: string
+ *          default: helloWorld
+ *        email:
+ *          type: string
+ *          default: deo@gmail.com
+ *        password:
+ *          type: string
+ *          default: 258745698
+ *        country:
+ *          type: string
+ *          default: 9ja
+ *        mobile:
+ *          type: string
+ *          default: 5425785
+ *    CreateUserResponse:
+ *      type: object
+ *      properties:
+ *        _id:
+ *          type: string
+ *        firstname:
+ *          type: string
+ *        lastname:
+ *          type: string
+ *        username:
+ *          type: string
+ *        email:
+ *          type: string
+ *        password:
+ *          type: string
+ *        country:
+ *          type: string
+ *        mobile:
+ *          type: string
+ *    LoginUser:
+ *      type: object
+ *      properties:
+ *        email:
+ *          type: string
+ *        password:
+ *          type: string
+ *        rememberme:
+ *          type: boolean
+ *    UserForgottenPassword:
+ *      type: object
+ *      properties:
+ *        email:
+ *          type: string
+ *    UserResetPassword:
+ *      type: object
+ *      properties:
+ *        password:
+ *          type: string
+ *        passwordConfirm:
+ *          type: string
+ *
+ *    updatePassword:
+ *      type: object
+ *      properties:
+ *        currentPassword:
+ *          type: string
+ *        password:
+ *          type: string
+ *        passwordConfirm:
+ *          type: string
+ *
+ *    userProfile:
+ *      type: object
+ *      properties:
+ *        firstname:
+ *          type: string
+ *        lastname:
+ *          type: string
+ *        photo:
+ *          type: string
+ */
 const userSchema = new mongoose_1.default.Schema({
     firstname: {
         type: String,
