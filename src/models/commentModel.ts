@@ -1,4 +1,33 @@
+import { NextFunction } from "express";
+
 const mongoose = require('mongoose');
+
+/**
+ * @openapi
+ * components:
+ *  schemas:
+ *    CreateComment:
+ *      type: object
+ *      required:
+ *        - comment
+ *      properties:
+ *        comment:
+ *          type: string
+ *    CommentResponse:
+ *      type: object
+ *      properties:
+ *        _id:
+ *          type: string
+ *        comment:
+ *          type: string
+ *        story:
+ *          type: string
+ *        createdAt:
+ *          type: string
+ *        updatedAt:
+ *          type: string
+ */
+
 
 const commentSchema = new mongoose.Schema({
     comment: {
@@ -22,13 +51,13 @@ const commentSchema = new mongoose.Schema({
 
 // remeber to add user name and photo so it can show those details sure 
 
-// commentSchema.pre(/^find/, function(next) {
-//   this.populate({
-//     path: 'story',
-//     select: 'title'
-//   })
-//   next();
-// })
+commentSchema.pre(/^find/, function(this:any, next: NextFunction) {
+  this.populate({
+    path: 'story',
+    select: 'title'
+  })
+  next();
+})
 
 const comments = mongoose.model('Comment', commentSchema);
 

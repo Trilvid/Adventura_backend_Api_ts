@@ -1,6 +1,41 @@
 const mongoose = require('mongoose');
 import { NextFunction } from "express";
 
+/**
+ * @openapi
+ * components:
+ *  schemas:
+ *    CreateStoryInput:
+ *      type: object
+ *      required:
+ *        - title
+ *        - story
+ *        - user_id
+ *        - image
+ *      properties:
+ *        title:
+ *          type: string
+ *        story:
+ *          type: string
+ *        user_id:
+ *          type: string
+ *        image:
+ *          type: string
+ *    StoryResponse:
+ *      type: object
+ *      properties:
+ *        _id:
+ *          type: string
+ *        title:
+ *          type: string
+ *        story:
+ *          type: string
+ *        user_id:
+ *          type: string
+ *        image:
+ *          type: string
+ */
+
 const storySchema = new mongoose.Schema({
     title: {
         type: String,
@@ -26,17 +61,17 @@ const storySchema = new mongoose.Schema({
 
 
 
-// storySchema.pre(/^find/, function(next:NextFunction) {
-// //   this.populate({
-// //     path: 'user_id',
-// //     select: 'firstname username'
-// //   })
+storySchema.pre(/^find/, function(this: any, next:NextFunction) {
+  this.populate({
+    path: 'user_id',
+    select: 'firstname username'
+  })
 // mongoose.model('User').populate({
 //     path: 'user_id',
 //     select: 'firstname username'
 //   })
-//   next();
-// })
+  next();
+})
 
 
 storySchema.virtual('comments', {
