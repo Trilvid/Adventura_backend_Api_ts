@@ -6,7 +6,7 @@ const express = require('express');
 const router = express.Router();
 /**
  * @openapi
- * /api/v1/stories/allStories:
+ * /api/v1/stories/allstories:
  *  get:
  *      tags:
  *      - Stories
@@ -16,7 +16,7 @@ const router = express.Router();
  *          200:
  *              description: App is up and running
  *
- * /api/v1/stories/newStory:
+ * /api/v1/stories/newstory:
  *  post:
  *      tags:
  *      - Stories
@@ -86,10 +86,10 @@ const router = express.Router();
  *
  */
 router.use('/:storyId/comments', commentRouter);
-router.get('/allStories', storyController.getAllStories);
+router.get('/allstories', storyController.getAllStories);
 router.get('/:id', storyController.getAStory);
 // only logged in users can use this route 
-router.use(authController.protect, authController.restrictTo('user'));
+// router.use(authController.protect, authController.restrictTo('user'))
 router.get('/', storyController.prevStory);
 router.post('/newstory', storyController.newStory);
 router.delete('/:id', storyController.deleteStory);

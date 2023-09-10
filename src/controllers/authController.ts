@@ -41,14 +41,14 @@ const success = ( statusCode: number, res:Response, req:Request, myuser: MyObjec
   // Remove password from output
   myuser.password = undefined;
 
-  const url= `${process.env.BASE_URL}auth/${myuser._id}/verify/${token}`;
+  // const url= `${process.env.BASE_URL}auth/${myuser._id}/verify/${token}`;
 
   res.status(statusCode).json({
       status: 'success',
       token,
       role: myuser.role,
       message,
-      url
+      // url
     });
 }
 
@@ -141,7 +141,7 @@ exports.getUserById = tryCatch( async (req:Request, res:Response) => {
       message: msg,
     });
 
-      return success(201, res, req, user, "Account Created")
+      return success(201, res, req, user, user)
       
   })
 
@@ -221,7 +221,7 @@ exports.protect = async (req:Request, res:Response, next:NextFunction) => {
     
   const decoded = await promisify(jwt.verify)(token, process.env.JWT_SECRET);
   
-  const currentUser = await User.findById(decoded.id);
+  const currentUser = await User.findById(decoded._id);
 
   if (!currentUser) {
     res.status(401).json({
@@ -229,11 +229,11 @@ exports.protect = async (req:Request, res:Response, next:NextFunction) => {
     })
   }
   
-  if (currentUser.changedPasswordAfter(decoded.iat)) {
-    res.status(401).json({
-      message: "This User recently changed password! please login again"
-    })
-  }
+  // if (currentUser.changedPasswordAfter(decoded.iat)) {
+  //   res.status(401).json({
+  //     message: "This User recently changed password! please login again"
+  //   })
+  // }
   
   req.user = currentUser;
   res.locals.user = currentUser;
@@ -253,7 +253,6 @@ next();
 exports.forgotPassword = tryCatch(async (req:Request, res:Response, next:NextFunction) => {
   const user = await User.findOne({ email: req.body.email });
 try{
-// const user = await User.findOne({ email: req.body.email });
 
 const resetToken = user.createPasswordResetToken();
 await user.save({ validateBeforeSave: false});
@@ -268,8 +267,6 @@ await sendEmail({
   subject: 'Email Reset Link',
   message
 });
-
-// await new Email(user, resetURL).sendPasswordReset();
 
   return res.status(200).json({
     status: 'success',

@@ -4,7 +4,7 @@ const myexpress = require('express');
 const routerx = myexpress.Router();
 /**
  * @openapi
- * /api/v1/auth/allUsers:
+ * /api/v1/users/allusers:
  *  get:
  *      tags:
  *      - User
@@ -14,7 +14,7 @@ const routerx = myexpress.Router();
  *          200:
  *              description: App is up and running
  *
- * /api/v1/auth/signUp:
+ * /api/v1/auth/signup:
  *  post:
  *      tags:
  *      - User
@@ -37,7 +37,7 @@ const routerx = myexpress.Router();
  *          400:
  *              description: Bad Request
  *
- * '/api/v1/auth/{userId}':
+ * '/api/v1/users/{userId}':
  *  get:
  *      tags:
  *      - User
@@ -57,7 +57,7 @@ const routerx = myexpress.Router();
  *          404:
  *              description: User not Found
  *
- * '/api/v1/auth/me':
+ * '/api/v1/users/me':
  *  get:
  *      tags:
  *      - User
@@ -69,7 +69,7 @@ const routerx = myexpress.Router();
  *          404:
  *              description: User not Found
  *
- * /api/v1/auth/signIn:
+ * /api/v1/auth/signin:
  *  post:
  *      tags:
  *      - User
@@ -88,7 +88,7 @@ const routerx = myexpress.Router();
  *          400:
  *              description: Bad Request
  *
- * /api/v1/auth/forgottenPassword:
+ * /api/v1/users/forgottenpassword:
  *  post:
  *      tags:
  *      - User
@@ -107,7 +107,7 @@ const routerx = myexpress.Router();
  *          400:
  *              description: Bad Request
  *
- * '/api/v1/auth/resetPassword/{token}':
+ * '/api/v1/users/resetpassword/{token}':
  *  patch:
  *      tags:
  *      - User
@@ -144,7 +144,7 @@ const routerx = myexpress.Router();
  *          404:
  *              description: User not Found
  *
- * /api/v1/auth/updatePassword:
+ * /api/v1/users/updatepassword:
  *  patch:
  *      tags:
  *      - User
@@ -163,7 +163,7 @@ const routerx = myexpress.Router();
  *          400:
  *              description: Bad Request
  *
- * /api/v1/auth/myProfile:
+ * /api/v1/users/myprofile:
  *  patch:
  *      tags:
  *      - User
@@ -183,7 +183,7 @@ const routerx = myexpress.Router();
  *          400:
  *              description: Bad Request
  *
- * /api/v1/auth/deleteAccount:
+ * /api/v1/users/deleteAccount:
  *  delete:
  *      tags:
  *      - User
@@ -200,18 +200,21 @@ const routerx = myexpress.Router();
  */
 // anybody can access this routes
 routerx.get('/:id/verify/:token', myauthController.verifyUser);
-routerx.post('/signUp', myauthController.SignUp);
-routerx.post('/signIn', myauthController.Login);
-routerx.post('/forgottenPassword', myauthController.forgotPassword);
-routerx.patch('/resetPassword/:token', myauthController.resetPassword);
+routerx.post('/signup', myauthController.SignUp);
+routerx.post('/signin', myauthController.Login);
+routerx.post('/forgottenpassword', myauthController.forgotPassword);
+routerx.patch('/resetpassword/:token', myauthController.resetPassword);
+routerx.get('/allusers', myauthController.getAllUsers);
 // only logged in users have access to this routes
 routerx.use(myauthController.protect);
-routerx.patch('/updatePassword', myauthController.updatePassword);
-routerx.patch('/myProfile', myauthController.updateMe);
-routerx.patch('/deleteAccount', myauthController.deleteMe);
+routerx.patch('/updatepassword', myauthController.updatePassword);
+routerx.patch('/myprofile', myauthController.updateMe);
+routerx.patch('/deleteaccount', myauthController.deleteMe);
 // only admins have access to this route
-routerx.use(myauthController.restrictTo("user"));
+// routerx.use(myauthController.restrictTo("user"))
 routerx.get('/:id', myauthController.getUserById);
 routerx.get('/me', myauthController.getUser);
-routerx.get('/allUsers', myauthController.restrictTo("admin"), myauthController.getAllUsers);
+// routerx.get('/allusers', 
+// myauthController.restrictTo("admin"), 
+// myauthController.getAllUsers)
 module.exports = routerx;

@@ -22,25 +22,22 @@ const createToken = (id) => {
         expiresIn: process.env.JWT_EXPIRES_IN
     });
 };
-const success = (statusCode, res, myuser, message) => {
+const success = (statusCode, res, req, myuser, message) => {
     const token = createToken(myuser.id);
-    // const cookieOptions = {
-    //   expires: new Date(
-    //     Date.now() + process.env.JWT_COOKIE_EXPIRES_IN * 24 * 60 * 60 * 1000
-    //   ),
-    //   httpOnly: true
-    // };
-    // if (process.env.NODE_ENV === 'production') cookieOptions.secure = true;
-    // res.cookie('jwt', token, cookieOptions);
-    // // Remove password from output
-    // user.password = undefined;
-    const url = `${process.env.BASE_URL}auth/${myuser._id}/verify/${token}`;
+    res.cookie('jwt', token, {
+        expires: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000),
+        httpOnly: true,
+        secure: req.secure || req.headers['x-forwarded-proto'] === 'https'
+    });
+    // Remove password from output
+    myuser.password = undefined;
+    // const url= `${process.env.BASE_URL}auth/${myuser._id}/verify/${token}`;
     res.status(statusCode).json({
         status: 'success',
         token,
         role: myuser.role,
         message,
-        url
+        // url
     });
 };
 // verify user
@@ -60,7 +57,6 @@ exports.verifyUser = tryCatch((req, res) => __awaiter(void 0, void 0, void 0, fu
         res.redirect(200, 'http://localhost:3000/login');
         if (res) {
             res.send("will now send email");
-            // remember to send email here with template tho
         }
         throw new AppError("Bad Request", "email was not sent", 400);
     }
@@ -111,10 +107,7 @@ exports.SignUp = tryCatch((req, res) => __awaiter(void 0, void 0, void 0, functi
         subject: 'Email verification',
         message: msg,
     });
-    // const url = `${req.protocol}://${req.get('host')}/me`;
-    // console.log(url);
-    // await new Email(newUser, url).sendWelcome();
-    return success(201, res, user, "Account Created");
+    return success(201, res, req, user, user);
 }));
 // login module 
 exports.Login = tryCatch((req, res) => __awaiter(void 0, void 0, void 0, function* () {
@@ -135,7 +128,7 @@ exports.Login = tryCatch((req, res) => __awaiter(void 0, void 0, void 0, functio
                 $set: { rememberme: true }
             });
         }
-        return success(200, res, user, "sucessfully logged in");
+        return success(200, res, req, user, "sucessfully logged in");
     }
 }));
 exports.logout = (req, res) => {
@@ -161,18 +154,19 @@ exports.protect = (req, res, next) => __awaiter(void 0, void 0, void 0, function
         });
     }
     const decoded = yield promisify(jwt.verify)(token, process.env.JWT_SECRET);
-    const currentUser = yield User.findById(decoded.id);
+    const currentUser = yield User.findById(decoded._id);
     if (!currentUser) {
         res.status(401).json({
             message: "Sorry This account does not exists!"
         });
     }
-    if (currentUser.changedPasswordAfter(decoded.iat)) {
-        res.status(401).json({
-            message: "This User recently changed password! please login again"
-        });
-    }
+    // if (currentUser.changedPasswordAfter(decoded.iat)) {
+    //   res.status(401).json({
+    //     message: "This User recently changed password! please login again"
+    //   })
+    // }
     req.user = currentUser;
+    res.locals.user = currentUser;
     return next();
 });
 exports.restrictTo = (...roles) => {
@@ -186,7 +180,6 @@ exports.restrictTo = (...roles) => {
 exports.forgotPassword = tryCatch((req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     const user = yield User.findOne({ email: req.body.email });
     try {
-        // const user = await User.findOne({ email: req.body.email });
         const resetToken = user.createPasswordResetToken();
         yield user.save({ validateBeforeSave: false });
         const resetURL = `${req.protocol}://${req.get('host')}/api/v1/auth/resetPassword/${resetToken}`;
@@ -196,7 +189,6 @@ exports.forgotPassword = tryCatch((req, res, next) => __awaiter(void 0, void 0, 
             subject: 'Email Reset Link',
             message
         });
-        // await new Email(user, resetURL).sendPasswordReset();
         return res.status(200).json({
             status: 'success',
             message: 'Token sent to email',
@@ -233,7 +225,7 @@ exports.resetPassword = tryCatch((req, res) => __awaiter(void 0, void 0, void 0,
     user.passwordResetToken = undefined;
     user.passwordResetExpires = undefined;
     yield user.save();
-    success(200, res, user, "passsword reset");
+    success(200, res, req, user, "passsword reset");
 }));
 exports.updatePassword = tryCatch((req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const user = yield User.findById(req.user.id).select('+password');
@@ -246,7 +238,7 @@ exports.updatePassword = tryCatch((req, res) => __awaiter(void 0, void 0, void 0
     user.password = req.body.password;
     user.passwordConfirm = req.body.passwordConfirm;
     yield user.save();
-    return success(200, res, user, ' Password Changed');
+    return success(200, res, req, user, ' Password Changed');
 }));
 exports.updateMe = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     const filterObj = (obj, ...allowedFields) => {

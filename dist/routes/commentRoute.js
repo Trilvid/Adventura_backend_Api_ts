@@ -5,7 +5,7 @@ const yexpress = require('express');
 const routery = yexpress.Router({ mergeParams: true });
 /**
  * @openapi
- * /api/v1/comment/allComment:
+ * /api/v1/comment/allcomment:
  *  get:
  *      tags:
  *      - Comments
@@ -71,7 +71,7 @@ const routery = yexpress.Router({ mergeParams: true });
  *
  *
  */
-routery.get('/allComment', ourcommentController.getAllComments);
+routery.get('/allcomment', ourcommentController.getAllComments);
 routery.get('/:id', ourcommentController.getComment);
 routery.post('/', ourcommentController.newComment);
 // only logged in users can use this route

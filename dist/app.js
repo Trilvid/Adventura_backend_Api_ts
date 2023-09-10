@@ -47,6 +47,7 @@ app.get('/', (req, res) => {
     res.send("hello Welcome to our application");
 });
 app.use('/api/v1/auth', auth);
+app.use('/api/v1/users', auth);
 app.use('/api/v1/stories', story);
 app.use('/api/v1/comment', comment);
 // 3) Error handler middleware - Place after route definitions

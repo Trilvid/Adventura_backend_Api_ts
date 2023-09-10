@@ -51,8 +51,8 @@ const validate = require('validator');
  *          type: string
  *          default: 9ja
  *        mobile:
- *          type: string
- *          default: 5425785
+ *          type: number
+ *          default: 9034187388
  *    CreateUserResponse:
  *      type: object
  *      properties:
@@ -71,7 +71,7 @@ const validate = require('validator');
  *        country:
  *          type: string
  *        mobile:
- *          type: string
+ *          type: number
  *    LoginUser:
  *      type: object
  *      properties:
@@ -220,7 +220,7 @@ userSchema.methods.changedPasswordAfter = function (JWTTimestamp) {
     }
     return false;
 };
-// userSchema.methods.changedPasswordAfter = function(JWTTimestamp) {
+// userSchema.methods.changedPasswordAfter = function(JWTTimestamp: number) {
 //   if (this.passwordChangedAt) {
 //     const changedTimestamp = parseInt(
 //       this.passwordChangedAt.getTime() / 1000,

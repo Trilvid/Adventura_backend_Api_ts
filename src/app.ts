@@ -53,6 +53,7 @@ app.get('/', (req:Request, res:Response) =>{
   res.send("hello Welcome to our application")
 })
 app.use('/api/v1/auth', auth);
+app.use('/api/v1/users', auth);
 app.use('/api/v1/stories', story);
 app.use('/api/v1/comment', comment);
 
