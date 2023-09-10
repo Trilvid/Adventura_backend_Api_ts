@@ -22,24 +22,24 @@ interface MyObjects {
     role: string;
     status:number,
     email: string,
-    firstname: string
+    firstname: string,
+    password: undefined
 }
 
-const success = ( statusCode: number, res:Response, myuser: MyObjects, message: string) => {
+const success = ( statusCode: number, res:Response, req:Request, myuser: MyObjects, message: string) => {
  
   const token = createToken(myuser.id);
-  // const cookieOptions = {
-  //   expires: new Date(
-  //     Date.now() + process.env.JWT_COOKIE_EXPIRES_IN * 24 * 60 * 60 * 1000
-  //   ),
-  //   httpOnly: true
-  // };
-  // if (process.env.NODE_ENV === 'production') cookieOptions.secure = true;
 
-  // res.cookie('jwt', token, cookieOptions);
+  res.cookie('jwt', token, {
+    expires: new Date(
+      Date.now() + 90 * 24 * 60 * 60 * 1000
+    ),
+    httpOnly: true,
+    secure: req.secure || req.headers['x-forwarded-proto'] === 'https'
+  });
 
-  // // Remove password from output
-  // user.password = undefined;
+  // Remove password from output
+  myuser.password = undefined;
 
   const url= `${process.env.BASE_URL}auth/${myuser._id}/verify/${token}`;
 
@@ -75,7 +75,6 @@ exports.verifyUser = tryCatch(async (req:Request, res:Response) => {
 
     if (res) {
       res.send("will now send email")
-      // remember to send email here with template tho
     }
     throw new AppError("Bad Request","email was not sent", 400)
 
@@ -142,11 +141,7 @@ exports.getUserById = tryCatch( async (req:Request, res:Response) => {
       message: msg,
     });
 
-  // const url = `${req.protocol}://${req.get('host')}/me`;
-  // console.log(url);
-  // await new Email(newUser, url).sendWelcome();
-
-      return success(201, res, user, "Account Created")
+      return success(201, res, req, user, "Account Created")
       
   })
 
@@ -176,7 +171,7 @@ exports.getUserById = tryCatch( async (req:Request, res:Response) => {
         $set: {rememberme: true}
       })
     }
-    return success(200, res, user, "sucessfully logged in")
+    return success(200, res, req, user, "sucessfully logged in")
 
     }
   })
@@ -213,7 +208,7 @@ exports.protect = async (req:Request, res:Response, next:NextFunction) => {
   ) {
     token = req.headers.authorization.split(' ')[1];
   }
-
+  
   else if (req.cookies.jwt) {
     token = req.cookies.jwt;
   }
@@ -241,6 +236,7 @@ exports.protect = async (req:Request, res:Response, next:NextFunction) => {
   }
   
   req.user = currentUser;
+  res.locals.user = currentUser;
   return next()
 }
 
@@ -325,7 +321,7 @@ const hashedToken = mycrypto
   await user.save();
   
 
-  success( 200, res, user, "passsword reset")
+  success( 200, res, req, user, "passsword reset")
 })
 
 
@@ -345,7 +341,7 @@ user.password = req.body.password;
 user.passwordConfirm = req.body.passwordConfirm;
 await user.save();
 
-return success( 200, res, user, ' Password Changed')
+return success( 200, res, req, user, ' Password Changed')
 
 })
 
