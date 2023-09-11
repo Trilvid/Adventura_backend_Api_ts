@@ -17,8 +17,6 @@ const validate =  require('validator');
  *        - username
  *        - email
  *        - password
- *        - country
- *        - mobile
  *      properties:
  *        firstname:
  *          type: string
@@ -35,12 +33,6 @@ const validate =  require('validator');
  *        password:
  *          type: string
  *          default: 258745698
- *        country:
- *          type: string
- *          default: 9ja
- *        mobile:
- *          type: number
- *          default: 9034187388
  *    CreateUserResponse:
  *      type: object
  *      properties:
@@ -56,10 +48,6 @@ const validate =  require('validator');
  *          type: string
  *        password:
  *          type: string
- *        country:
- *          type: string
- *        mobile:
- *          type: number
  *    LoginUser:
  *      type: object
  *      properties:
@@ -139,15 +127,6 @@ const userSchema = new mongoose.Schema(
         minLength: [8, 'minimum password lenght is 8 '],
         select: false
     },
-    country: {
-      type: String,
-      required: [true, 'please select your country']
-    },
-     mobile: { 
-          type: Number, 
-          required: [true, 'sorry this field cannot be empty'],
-          // validate: [validate.isMobilePhone, "please enter a valid mobile number"]
-        },
     role: {
       type: String,
       default: 'user',
@@ -211,27 +190,26 @@ userSchema.pre(/^find/, function (next) {
 
 
 
-  userSchema.methods.changedPasswordAfter = function (JWTTimestamp: number) {
-    if (this.passwordChangedAt) {
-      const changedTimestamp: string = (this.passwordChangedAt.getTime() / 1000).toString();
-      return changedTimestamp < JWTTimestamp.toString();
-    }
-  
-    return false;
-  };
-
-  // userSchema.methods.changedPasswordAfter = function(JWTTimestamp: number) {
+  // userSchema.methods.changedPasswordAfter = function (JWTTimestamp: number) {
   //   if (this.passwordChangedAt) {
-  //     const changedTimestamp = parseInt(
-  //       this.passwordChangedAt.getTime() / 1000,
-  //       10
-  //     );
-  
-  //     return changedTimestamp < JWTTimestamp; 
+  //     const changedTimestamp: string = (this.passwordChangedAt.getTime() / 1000).toString();
+  //     return changedTimestamp < JWTTimestamp.toString();
   //   }
   
   //   return false;
   // };
+
+  userSchema.methods.changedPasswordAfter = function(JWTTimestamp: number) {
+    if (this.passwordChangedAt) {
+      const variablex:any =  this.passwordChangedAt.getTime() / 1000;
+      
+      const changedTimestamp:number = parseInt(variablex);
+  
+      return changedTimestamp < JWTTimestamp; 
+    }
+  
+    return false;
+  };
   
   
   

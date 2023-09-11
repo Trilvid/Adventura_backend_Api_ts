@@ -1,12 +1,12 @@
 import { Request, Response, NextFunction } from "express";
 const User = require('../models/userModel');
 const jwt = require('jsonwebtoken');
-const mycrypto = require('crypto');
+const cryptox = require('crypto');
 const tryCatch = require('./../utils/tryCatch')
 const AppError = require('./../utils/AppError');
 const { promisify } = require('util');
 const sendEmail = require('./../utils/sendEmail');
-const Email = require('./../utils/sendEmail');
+// const Email = require('./../utils/sendEmail');
 
 
 
@@ -30,25 +30,22 @@ const success = ( statusCode: number, res:Response, req:Request, myuser: MyObjec
  
   const token = createToken(myuser.id);
 
-  res.cookie('jwt', token, {
-    expires: new Date(
-      Date.now() + 90 * 24 * 60 * 60 * 1000
-    ),
-    httpOnly: true,
-    secure: req.secure || req.headers['x-forwarded-proto'] === 'https'
-  });
+  // res.cookie('jwt', token, {
+  //   expires: new Date(
+  //     Date.now() + 30 * 24 * 60 * 60 * 1000
+  //   ),
+  //   httpOnly: true,
+  //   secure: req.secure || req.headers['x-forwarded-proto'] === 'https'
+  // });
 
-  // Remove password from output
+  
   myuser.password = undefined;
-
-  // const url= `${process.env.BASE_URL}auth/${myuser._id}/verify/${token}`;
 
   res.status(statusCode).json({
       status: 'success',
-      token,
-      role: myuser.role,
       message,
-      // url
+      token,
+      role: myuser.role
     });
 }
 
@@ -122,7 +119,7 @@ exports.getUserById = tryCatch( async (req:Request, res:Response) => {
 
       })
 
-  const message = `Hello ${user.firstname} welcome to Adventira,  your password? Submit a PATCH request with your new password and passwordConfirm to.\nIf you didn't forget your password, please ignore this email!`;
+  const message = `Hello ${user.firstname} welcome to Adventura,  we password? Submit a PATCH request with your new password and passwordConfirm to.\nIf you didn't forget your password, please ignore this email!`;
 
     await sendEmail({
       email: user.email,
@@ -209,34 +206,40 @@ exports.protect = async (req:Request, res:Response, next:NextFunction) => {
     token = req.headers.authorization.split(' ')[1];
   }
   
-  else if (req.cookies.jwt) {
-    token = req.cookies.jwt;
-  }
+  // else if (req.cookies.jwt) {
+  //   token = req.cookies.jwt;
+  // }
 
   if (!token) {
     res.status(401).json({
       message: "You are not Logged in!"
     })
   }
-    
-  const decoded = await promisify(jwt.verify)(token, process.env.JWT_SECRET);
-  
-  const currentUser = await User.findById(decoded._id);
-
-  if (!currentUser) {
-    res.status(401).json({
-      message: "Sorry This account does not exists!"
-    })
+  interface decodeObject {
+    _id: string,
+    iat: any
   }
+      
+  const decoded:decodeObject = await promisify(jwt.verify)(token, process.env.JWT_SECRET);
   
-  // if (currentUser.changedPasswordAfter(decoded.iat)) {
+  console.log(decoded)
+  res.send(decoded)
+  // const currentUser = await User.findById(decoded._id);
+
+  // if (!currentUser) {
   //   res.status(401).json({
-  //     message: "This User recently changed password! please login again"
+  //     message: "Sorry This account does not exists!"
   //   })
   // }
   
-  req.user = currentUser;
-  res.locals.user = currentUser;
+  // // if (currentUser.changedPasswordAfter(decoded.iat)) {
+  // //   res.status(401).json({
+  // //     message: "This User recently changed password! please login again"
+  // //   })
+  // // }
+
+  // req.user = currentUser;
+  // res.locals.user = currentUser;
   return next()
 }
 
@@ -296,7 +299,7 @@ catch (err) {
 
 
 exports.resetPassword = tryCatch(async (req:Request, res:Response) => {
-const hashedToken = mycrypto
+const hashedToken = cryptox
   .createHash('sha256')
   .update(req.params.token)
   .digest('hex');
@@ -313,7 +316,7 @@ const hashedToken = mycrypto
   user.password = req.body.password;
   user.passwordConfirm = req.body.passwordConfirm;
   user.passwordResetToken = undefined;
-  user.passwordResetExpires = undefined;
+  user.passwordResetExpires = undefined; 
 
   await user.save();
   
@@ -403,7 +406,7 @@ exports.deleteMe =  tryCatch(async (req:Request, res:Response) => {
       res.status(204).json({
         status: 'ok',
         data: null
-      });
+      }); 
   
 });
 

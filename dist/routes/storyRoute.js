@@ -89,7 +89,7 @@ router.use('/:storyId/comments', commentRouter);
 router.get('/allstories', storyController.getAllStories);
 router.get('/:id', storyController.getAStory);
 // only logged in users can use this route 
-// router.use(authController.protect, authController.restrictTo('user'))
+router.use(authController.protect, authController.restrictTo('user'));
 router.get('/', storyController.prevStory);
 router.post('/newstory', storyController.newStory);
 router.delete('/:id', storyController.deleteStory);

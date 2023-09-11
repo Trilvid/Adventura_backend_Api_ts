@@ -211,10 +211,9 @@ routerx.patch('/updatepassword', myauthController.updatePassword);
 routerx.patch('/myprofile', myauthController.updateMe);
 routerx.patch('/deleteaccount', myauthController.deleteMe);
 // only admins have access to this route
-// routerx.use(myauthController.restrictTo("user"))
 routerx.get('/:id', myauthController.getUserById);
 routerx.get('/me', myauthController.getUser);
+// routerx.use(myauthController.restrictTo("user"))
 // routerx.get('/allusers', 
-// myauthController.restrictTo("admin"), 
 // myauthController.getAllUsers)
 module.exports = routerx;
