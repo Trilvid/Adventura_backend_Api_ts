@@ -16,21 +16,19 @@ const tryCatch = require('./../utils/tryCatch');
 const AppError = require('./../utils/AppError');
 const { promisify } = require('util');
 const sendEmail = require('./../utils/sendEmail');
-// const Email = require('./../utils/sendEmail');
-const createToken = (id) => {
-    return jwt.sign({ id }, process.env.JWT_SECRET, {
+// import * as jwt from 'jsonwebtoken';
+const createToken = (_id) => {
+    return jwt.sign({ _id }, process.env.JWT_SECRET, {
         expiresIn: process.env.JWT_EXPIRES_IN
     });
 };
 const success = (statusCode, res, req, myuser, message) => {
-    const token = createToken(myuser.id);
-    // res.cookie('jwt', token, {
-    //   expires: new Date(
-    //     Date.now() + 30 * 24 * 60 * 60 * 1000
-    //   ),
-    //   httpOnly: true,
-    //   secure: req.secure || req.headers['x-forwarded-proto'] === 'https'
-    // });
+    const token = createToken(myuser._id);
+    res.cookie('jwt', token, {
+        expires: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+        httpOnly: true,
+        // secure: req.secure || req.headers['x-access-token'] === 'http'
+    });
     myuser.password = undefined;
     res.status(statusCode).json({
         status: 'success',
@@ -60,16 +58,46 @@ exports.verifyUser = tryCatch((req, res) => __awaiter(void 0, void 0, void 0, fu
         throw new AppError("Bad Request", "email was not sent", 400);
     }
 }));
+// protecting the routes
+exports.protect = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    let token;
+    if (req.headers.authorization &&
+        req.headers.authorization.startsWith('Bearer')) {
+        token = req.headers.authorization.split(' ')[1];
+    }
+    else if (req.cookies.jwt) {
+        token = req.cookies.jwt;
+    }
+    if (!token) {
+        res.status(401).json({
+            message: "You are not Logged in!"
+        });
+    }
+    const decoded = yield promisify(jwt.verify)(token, process.env.JWT_SECRET);
+    // const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const currentUser = yield User.findById(decoded._id);
+    if (!currentUser) {
+        res.status(401).json({
+            message: "Sorry This account does not exists!"
+        });
+    }
+    req.user = currentUser;
+    res.locals.user = currentUser;
+    return next();
+});
 // module to get users
 exports.getAllUsers = tryCatch((req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const data = yield User.find();
+    const data = yield User.find({});
     return res.status(200).json({
         total: data.length,
         data
     });
 }));
 exports.getUser = tryCatch((req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const data = yield User.findById(req.user.id, {});
+    const me = req.user.id;
+    const data = yield User.findById(me);
+    if (!data)
+        throw new AppError("Not Found", "This User does not exist", 404);
     return res.status(200).json(data);
 }));
 exports.getUserById = tryCatch((req, res) => __awaiter(void 0, void 0, void 0, function* () {
@@ -85,8 +113,6 @@ exports.SignUp = tryCatch((req, res) => __awaiter(void 0, void 0, void 0, functi
         lastname: req.body.lastname,
         username: req.body.username,
         email: req.body.email,
-        mobile: req.body.mobile,
-        country: req.body.country,
         password: req.body.password,
         role: req.body.role,
         active: req.body.active,
@@ -98,7 +124,7 @@ exports.SignUp = tryCatch((req, res) => __awaiter(void 0, void 0, void 0, functi
         subject: 'Welcome To Adventura',
         message
     });
-    const token = createToken(user.id);
+    const token = createToken(user._id);
     const url = `${process.env.BASE_URL}auth/${user._id}/verify/${token}`;
     const msg = `Hello ${user.firstname}, you can verify your email here on ${url} thanks for your patience`;
     yield sendEmail({
@@ -137,39 +163,6 @@ exports.logout = (req, res) => {
     });
     res.status(200).json({ status: 'success' });
 };
-// protecting the routes
-exports.protect = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    let token;
-    if (req.headers.authorization &&
-        req.headers.authorization.startsWith('Bearer')) {
-        token = req.headers.authorization.split(' ')[1];
-    }
-    // else if (req.cookies.jwt) {
-    //   token = req.cookies.jwt;
-    // }
-    if (!token) {
-        res.status(401).json({
-            message: "You are not Logged in!"
-        });
-    }
-    const decoded = yield promisify(jwt.verify)(token, process.env.JWT_SECRET);
-    console.log(decoded);
-    res.send(decoded);
-    // const currentUser = await User.findById(decoded._id);
-    // if (!currentUser) {
-    //   res.status(401).json({
-    //     message: "Sorry This account does not exists!"
-    //   })
-    // }
-    // // if (currentUser.changedPasswordAfter(decoded.iat)) {
-    // //   res.status(401).json({
-    // //     message: "This User recently changed password! please login again"
-    // //   })
-    // // }
-    // req.user = currentUser;
-    // res.locals.user = currentUser;
-    return next();
-});
 exports.restrictTo = (...roles) => {
     return (req, res, next) => {
         if (!roles.includes(req.user.role)) {

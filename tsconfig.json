@@ -2,7 +2,7 @@
 
   "compilerOptions": {
     "target": "es2016",         
-    "module": "commonjs",    
+    "module": "CommonJS",    
     "rootDir": "./src",  
     "outDir": "./dist",      
     "moduleResolution": "node", 
@@ -10,8 +10,10 @@
     "esModuleInterop": true,  
     "strict": true,  
     // "allowImportingTsExtensions": false
-    // "forceConsistentCasingInFileNames": true, 
-    // "noEmit": true
+    "forceConsistentCasingInFileNames": true, 
+    // "noEmit": true,
+    "declaration": false,
+    "skipLibCheck": true
   },
   "include": ["./src/**/*",
     "index.ts",

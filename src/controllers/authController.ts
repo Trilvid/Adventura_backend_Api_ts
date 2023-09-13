@@ -6,12 +6,12 @@ const tryCatch = require('./../utils/tryCatch')
 const AppError = require('./../utils/AppError');
 const { promisify } = require('util');
 const sendEmail = require('./../utils/sendEmail');
-// const Email = require('./../utils/sendEmail');
+// import * as jwt from 'jsonwebtoken';
 
 
 
-const createToken = (id: string) => {
-  return jwt.sign({ id }, process.env.JWT_SECRET, {
+const createToken = (_id: string) => {
+  return jwt.sign({ _id }, process.env.JWT_SECRET, {
     expiresIn:  process.env.JWT_EXPIRES_IN
   })
 };
@@ -26,18 +26,33 @@ interface MyObjects {
     password: undefined
 }
 
+// Create a custom type for user data
+interface UserData {
+  id: string;
+  role: string;
+  _id: string
+}
+
+declare global {
+  namespace Express {
+    interface Request {
+      user: UserData;
+    }
+  }
+}
+
+
 const success = ( statusCode: number, res:Response, req:Request, myuser: MyObjects, message: string) => {
  
-  const token = createToken(myuser.id);
+  const token = createToken(myuser._id);
 
-  // res.cookie('jwt', token, {
-  //   expires: new Date(
-  //     Date.now() + 30 * 24 * 60 * 60 * 1000
-  //   ),
-  //   httpOnly: true,
-  //   secure: req.secure || req.headers['x-forwarded-proto'] === 'https'
-  // });
-
+  res.cookie('jwt', token, {
+    expires: new Date(
+      Date.now() + 30 * 24 * 60 * 60 * 1000
+    ),
+    httpOnly: true,
+    // secure: req.secure || req.headers['x-access-token'] === 'http'
+  });
   
   myuser.password = undefined;
 
@@ -78,10 +93,46 @@ exports.verifyUser = tryCatch(async (req:Request, res:Response) => {
   }
 })
 
+  // protecting the routes
+  exports.protect = async (req:Request, res:Response, next:NextFunction) => {
+    let token;
+  
+    if (
+      req.headers.authorization &&
+      req.headers.authorization.startsWith('Bearer')
+    ) {
+      token = req.headers.authorization.split(' ')[1];
+    }
+    
+    else if (req.cookies.jwt) {
+      token = req.cookies.jwt;
+    }
+  
+    if (!token) {
+      res.status(401).json({
+        message: "You are not Logged in!"
+      })
+    }      
+    const decoded = await promisify(jwt.verify)(token, process.env.JWT_SECRET);
+    
+    // const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const currentUser = await User.findById(decoded._id);
+    
+    if (!currentUser) {
+      res.status(401).json({
+        message: "Sorry This account does not exists!"
+      })
+    }
+  
+    req.user = currentUser;
+    res.locals.user = currentUser;
+    return next()
+  } 
+
 // module to get users
   exports.getAllUsers = tryCatch(async (req:Request, res:Response) => {
 
-    const data = await User.find()
+    const data = await User.find({})
     return res.status(200).json({
       total: data.length,
     data
@@ -89,8 +140,10 @@ exports.verifyUser = tryCatch(async (req:Request, res:Response) => {
   })
 
   exports.getUser = tryCatch( async (req:Request, res:Response) => {
-    const data = await User.findById(req.user.id, {})
-   return res.status(200).json(data)
+    const me = req.user.id
+    const data = await User.findById(me)
+    if(!data) throw new AppError("Not Found", "This User does not exist", 404)
+    return res.status(200).json(data)
 
 })
 
@@ -110,8 +163,6 @@ exports.getUserById = tryCatch( async (req:Request, res:Response) => {
         lastname: req.body.lastname,
         username: req.body.username,
         email: req.body.email,
-        mobile: req.body.mobile,
-        country: req.body.country,
         password: req.body.password,
         role: req.body.role,
         active: req.body.active,
@@ -127,7 +178,7 @@ exports.getUserById = tryCatch( async (req:Request, res:Response) => {
       message
     });
 
-  const token = createToken(user.id);
+  const token = createToken(user._id);
   const url= `${process.env.BASE_URL}auth/${user._id}/verify/${token}`;
 
   const msg = `Hello ${user.firstname}, you can verify your email here on ${url} thanks for your patience`;
@@ -180,68 +231,6 @@ exports.logout = (req:Request, res:Response) => {
   });
   res.status(200).json({ status: 'success' });
 };
-
-// Create a custom type for user data
-interface UserData {
-  id: string;
-  role: string
-}
-
-declare global {
-  namespace Express {
-    interface Request {
-      user: UserData;
-    }
-  }
-}
-
-  // protecting the routes
-exports.protect = async (req:Request, res:Response, next:NextFunction) => {
-  let token;
-
-  if (
-    req.headers.authorization &&
-    req.headers.authorization.startsWith('Bearer')
-  ) {
-    token = req.headers.authorization.split(' ')[1];
-  }
-  
-  // else if (req.cookies.jwt) {
-  //   token = req.cookies.jwt;
-  // }
-
-  if (!token) {
-    res.status(401).json({
-      message: "You are not Logged in!"
-    })
-  }
-  interface decodeObject {
-    _id: string,
-    iat: any
-  }
-      
-  const decoded:decodeObject = await promisify(jwt.verify)(token, process.env.JWT_SECRET);
-  
-  console.log(decoded)
-  res.send(decoded)
-  // const currentUser = await User.findById(decoded._id);
-
-  // if (!currentUser) {
-  //   res.status(401).json({
-  //     message: "Sorry This account does not exists!"
-  //   })
-  // }
-  
-  // // if (currentUser.changedPasswordAfter(decoded.iat)) {
-  // //   res.status(401).json({
-  // //     message: "This User recently changed password! please login again"
-  // //   })
-  // // }
-
-  // req.user = currentUser;
-  // res.locals.user = currentUser;
-  return next()
-}
 
 exports.restrictTo = (...roles:[string]) => {
 return (req:Request, res:Response, next:NextFunction)  => { 

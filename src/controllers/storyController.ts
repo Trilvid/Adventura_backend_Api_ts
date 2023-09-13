@@ -20,18 +20,19 @@ exports.getAllStories = tryCatch(async (req:Request, res:Response) => {
 
 })
 // costom 
-interface UserData {
-    id: string;
-    role: string
-  }
+// interface UserData {
+//     id: string;
+//     role: string;
+//     _id: string
+//   }
   
-  declare global {
-    namespace Express {
-      interface Request {
-        user: UserData;
-      }
-    }
-  }
+//   declare global {
+//     namespace Express {
+//       interface Request {
+//         user: UserData;
+//       }
+//     }
+//   }
 
 exports.newStory = tryCatch(async (req:Request, res:Response) => {
     const data = {

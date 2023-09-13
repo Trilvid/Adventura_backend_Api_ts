@@ -136,7 +136,7 @@ const userSchema = new mongoose.Schema(
       type:Boolean,
       default: false
     },
-    verified:{type:Boolean, default:false},
+    verified:{type:Boolean, default:true},
     passwordChangedAt: {type: Number},
     passwordResetToken: {type: String},
     passwordResetExpires: Date,

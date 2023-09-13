@@ -37,7 +37,7 @@ const routerx = myexpress.Router();
  *          400:
  *              description: Bad Request
  *
- * '/api/v1/users/{userId}':
+ * '/api/v1/users/{id}':
  *  get:
  *      tags:
  *      - User
@@ -204,16 +204,14 @@ routerx.post('/signup', myauthController.SignUp);
 routerx.post('/signin', myauthController.Login);
 routerx.post('/forgottenpassword', myauthController.forgotPassword);
 routerx.patch('/resetpassword/:token', myauthController.resetPassword);
-routerx.get('/allusers', myauthController.getAllUsers);
 // only logged in users have access to this routes
 routerx.use(myauthController.protect);
 routerx.patch('/updatepassword', myauthController.updatePassword);
 routerx.patch('/myprofile', myauthController.updateMe);
 routerx.patch('/deleteaccount', myauthController.deleteMe);
 // only admins have access to this route
+routerx.get(`/me`, myauthController.restrictTo('user', 'admin'), myauthController.getUser);
+routerx.use(myauthController.restrictTo("admin"));
+routerx.get('/allusers', myauthController.getAllUsers);
 routerx.get('/:id', myauthController.getUserById);
-routerx.get('/me', myauthController.getUser);
-// routerx.use(myauthController.restrictTo("user"))
-// routerx.get('/allusers', 
-// myauthController.getAllUsers)
 module.exports = routerx;
