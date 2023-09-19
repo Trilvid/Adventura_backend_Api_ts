@@ -20,8 +20,9 @@ const rateLimit = require('express-rate-limit');
 const mongoSanitize = require('express-mongo-sanitize');
 const xss = require('xss-clean');
 const limiter = rateLimit({
-    max: 100,
-    windowMs: 60 * 60 * 1000,
+    max: 20,
+    windowMs: 30 * 60 * 1000,
+    skipSuccessfulRequests: true,
     message: 'Too Many requests form this Ip, please try again in an hour!'
 });
 const app = (0, express_1.default)();
@@ -37,7 +38,7 @@ app.use(mongoSanitize());
 app.use(xss());
 app.set('view engine', 'pug');
 app.use(express_1.default.static(path_1.default.join(__dirname, 'public')));
-app.use(body_parser_1.default.json());
+app.use(body_parser_1.default.json({ limit: '5mb' }));
 app.use(body_parser_1.default.urlencoded({ extended: true }));
 // swagger documentation
 const port = 5000;

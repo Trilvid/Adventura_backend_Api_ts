@@ -18,8 +18,9 @@ const xss = require('xss-clean');
 
 
 const limiter = rateLimit({
-  max: 100,
-  windowMs: 60 * 60 * 1000,
+  max: 20,
+  windowMs: 30 * 60 * 1000,
+  skipSuccessfulRequests: true,
   message: 'Too Many requests form this Ip, please try again in an hour!'
 });
 
@@ -41,7 +42,7 @@ app.set('view engine', 'pug');
 app.use(express.static(path.join(__dirname, 'public')));
 
 
-app.use(bodyParser.json());
+app.use(bodyParser.json({limit: '5mb'}));
 app.use(bodyParser.urlencoded({ extended: true }));
 
 // swagger documentation

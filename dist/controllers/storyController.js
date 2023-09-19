@@ -25,19 +25,6 @@ exports.getAllStories = tryCatch((req, res) => __awaiter(void 0, void 0, void 0,
         story
     });
 }));
-// costom 
-// interface UserData {
-//     id: string;
-//     role: string;
-//     _id: string
-//   }
-//   declare global {
-//     namespace Express {
-//       interface Request {
-//         user: UserData;
-//       }
-//     }
-//   }
 exports.newStory = tryCatch((req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const data = {
         title: req.body.title,
