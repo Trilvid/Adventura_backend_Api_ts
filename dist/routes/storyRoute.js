@@ -55,7 +55,7 @@ const router = express.Router();
  *          404:
  *              description: Story not Found
  *
- * '/api/v1/stories/':
+ * '/api/v1/stories/history':
  *  get:
  *      tags:
  *      - Stories
@@ -87,10 +87,10 @@ const router = express.Router();
  */
 router.use('/:storyId/comments', commentRouter);
 router.get('/allstories', storyController.getAllStories);
+router.get('/history', authController.protect, authController.restrictTo('user'), storyController.prevStory);
 router.get('/:id', storyController.getAStory);
 // only logged in users can use this route 
 router.use(authController.protect, authController.restrictTo('user'));
-router.get('/', storyController.prevStory);
 router.post('/newstory', storyController.newStory);
 router.delete('/:id', storyController.deleteStory);
 module.exports = router;

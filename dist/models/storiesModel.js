@@ -10,14 +10,11 @@ const mongoose = require('mongoose');
  *      required:
  *        - title
  *        - story
- *        - user_id
  *        - image
  *      properties:
  *        title:
  *          type: string
  *        story:
- *          type: string
- *        user_id:
  *          type: string
  *        image:
  *          type: string
